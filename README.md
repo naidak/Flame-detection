@@ -1,7 +1,7 @@
 # Flame-detection
 This project is designed to monitor for flame or fire presence using an IoT-based system, which triggers alerts or safety measures in response. The system uses a flame sensor connected to a microcontroller, sending real-time data to a web or mobile application where users can monitor the status and receive notifications in case of fire.
 
-#Features
+# Features
 Real-Time Flame Detection: Detects flames using a flame sensor and triggers alerts.
 Microcontroller-Based Processing: Uses a microcontroller (ESP8266) to monitor the sensor.
 Cloud Integration: Stores detection events and notifications on a cloud platform (Firebase).
