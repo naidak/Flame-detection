@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flame detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1; 
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .flame {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw; 
+            height: 100vh; 
+            background: radial-gradient(circle, #ffeb00 10%, #ffab00 30%, #ff5500 60%, transparent 80%);
+            animation: flameAnimation 1s ease-in-out infinite alternate;
+            z-index: 0; 
+        }
+        @keyframes flameAnimation {
+            0% {
+                transform: scale(1) translateY(0);
+                box-shadow: 0 0 10px rgba(255, 235, 0, 0.8);
+            }
+            100% {
+                transform: scale(1.2) translateY(-20px);
+                box-shadow: 0 0 20px rgba(255, 235, 0, 0.8);
+            }
+        }
+        .flame.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="buzzerData"></h1>
+        <h1 id="ledData"></h1>
+        <h1 id="flameData"></h1>
+        <button onclick="ugasiAlarm()">Ugasi alarm</button>
+        <button onclick="sos()">Dioda</button>
+    </div>
+    <div class="flame" id="flameEffect"></div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
+        
+        var buzzerData = document.getElementById("buzzerData");
+        var ledData = document.getElementById("ledData");
+        var flameData = document.getElementById("flameData");
+        const firebaseConfig = {
+            apiKey: "AIzaSyAf3hUN4T0B_CSmimU0yjQ8l0ZoTiAxDvY",
+          authDomain: "flame-detection-ba6b7.firebaseapp.com",
+          databaseURL: "https://flame-detection-ba6b7-default-rtdb.europe-west1.firebasedatabase.app",
+          projectId: "flame-detection-ba6b7",
+          storageBucket: "flame-detection-ba6b7.appspot.com",
+          messagingSenderId: "33454797266",
+          appId: "1:33454797266:web:ce5dc78e61628a98c3180b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        var dbRef = ref(db, 'Sensor/buzzerData');
+        var flag = ref(db, 'flag');
+        var led = ref(db, 'Sensor/ledData');
+        var flame = ref(db, 'Sensor/flameData')
+        var flameEffect = document.getElementById("flameEffect");
+        onValue(dbRef, (snapshot) => {
+            buzzerData.innerText = snapshot.val() == 0 ? 'Buzzer: OFF':'Buzzer: ON';
+        });
+
+        onValue(led, (snapshot) => {
+            ledData.innerText = snapshot.val() == 0 ? 'LED: OFF':'LED: ON';
+        });
+
+        onValue(dbRef, (snapshot) => {
+            flameData.innerText = snapshot.val() == 0 ? 'Nema požara' : 'Požar!!!';
+            if (snapshot.val() == 0) {
+                flameEffect.classList.remove('active');
+            } else {
+                flameEffect.classList.add('active');
+            }
+        });
+        let flagValue = false;
+
+        window.ugasiAlarm = function() {
+            flagValue = !flagValue;
+            set(dbRef, 0)
+                .then(() => console.log("Buzzer Data updated successfully."))
+                .catch((error) => console.error("Error updating Buzzer Data:", error));
+            set(flag, flagValue)
+            .then(()=> console.log("Updated flag, value: "+flagValue))
+            .catch((error)=> console.log("Error updating flag: "+error));
+            
+        };
+    </script>
+</body>
+</html>
